@@ -1,0 +1,11 @@
+{
+  "generator-openapi-repo": {
+    "importExistingSpec": true,
+    "importedSpec": "/Users/user/GoogleDrive/NewProject/API/DT_API/api-docs/management-api-swagger.yaml",
+    "name": "DataTiger",
+    "repo": "DataTigerGitHub/API-Docs-and-Code",
+    "splitSpec": false,
+    "samples": true,
+    "installSwaggerUI": true
+  }
+}
