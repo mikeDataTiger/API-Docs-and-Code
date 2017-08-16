@@ -1,4 +1,3 @@
-#
 #While it makes a lot of sense to split the definition into multiple files,
 #most Open API tools I've found are a horrible mess and don't work very well with that.
 #Specifically:
@@ -219,6 +218,10 @@ paths:
           description: 'pong'
           schema:
               type: string
+      x-code-samples:
+        -
+          lang: JAVA:
+          source: |-
 
 
 ##################################################################################
@@ -607,8 +610,8 @@ paths:
               application:
                 name: Test application
               version: 2
-              startsOn: "2016-01-01 00:00:00"
-              endsOn: "2016-02-01 00:00:00"
+              startsOn: 1451606400000
+              endsOn: 1454284800000
               status: ACTIVE
               triggerExpression: "event.EventType == 'Installed'"
               abTest:
@@ -960,12 +963,14 @@ definitions:
       - float
       - datetime
 
-  DateTimeType:
+  DateTimeUNIXTimestamp:
     type: string
-    description: "Date and time in UTC, using the following format: 'yyyy-MM-dd HH:mm:ss'"
-  DateType:
+    description: "Date and time formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved."
+
+  DateUNIXTimestamp:
     type: string
-    description: "A date formated as follows: 'yyyy-MM-dd'"
+    description: "A date formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved."
+
   PropertyValueType:
     type: string
 
@@ -1090,10 +1095,10 @@ definitions:
                 $ref: "#/definitions/IdType"
             startsOn:
                 description: Start of the workflow validity time. The workflow can only be triggered after this time.
-                "$ref" : "#/definitions/DateTimeType"
+                "$ref" : "#/definitions/DateTimeUNIXTimestamp"
             endsOn:
                 description: End of the workflow validity time. The workflow can only be triggered before this time.
-                "$ref" : "#/definitions/DateTimeType"
+                "$ref" : "#/definitions/DateTimeUNIXTimestamp"
             status:
                 description: The current status of the workflow
                 "$ref" : "#/definitions/StatusType"
@@ -1112,8 +1117,7 @@ definitions:
                 properties:
                   stepName:
                     $ref: '#/definitions/WorkflowStepType'
-                additionalProperties:
-                  $ref: '#/definitions/WorkflowStepType'
+
 
   WorkflowType:
     description: Full populated workflow type, including the identifier and version number.
@@ -1141,6 +1145,8 @@ definitions:
       - name
       - type
     properties:
+      type:
+        "$ref": "#/definitions/WorkflowStateType"
       name:
         description: |
           The name of the workflow step. This is used as an identifier for this step within
@@ -1148,8 +1154,6 @@ definitions:
         "$ref" : "#/definitions/WorkflowStepNameType"
       description:
         type: string
-      type:
-        "$ref": "#/definitions/WorkflowStateType"
       transitions:
         type: object
         description: |
@@ -1370,14 +1374,14 @@ parameters:
         name: fromTime
         in: query
         required: false
-        description: "Starting date of validity. Format: 'yyyy-MM-dd'"
+        description: "Starting date of validity. Format: 'UNIX timestamp'"
         type: string
 
     dateToFilter:
         name: endTime
         in: query
         required: false
-        description: "Ending date of validity, Format: 'yyyy-MM-dd'"
+        description: "Ending date of validity, Format: 'UNIX timestamp'"
         type: string
 
     ABTestsSortingParam:
