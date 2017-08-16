@@ -218,8 +218,7 @@ paths:
           description: 'pong'
           schema:
               type: string
-      x-code-samples:
-        -
+
 
 
 
