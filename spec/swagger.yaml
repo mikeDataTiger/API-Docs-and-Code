@@ -27,7 +27,7 @@ info:
 
     To play around with a few examples, we recommend a REST client called Postman. Simply tap the button below to import a pre-made collection of examples.
 
-    <a href="https://app.getpostman.com/run-collection/349c201d8075638ae5a4" target="_blank"><img src="https://run.pstmn.io/button.svg" alt="Run in Postman"></a>
+    <a href="https://github.com/DataTigerGitHub/API-Docs-and-Code/blob/master/web/postman.md" target="_blank"><img src="https://run.pstmn.io/button.svg" alt="Run in Postman"></a>
 
     # General concepts
     * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
