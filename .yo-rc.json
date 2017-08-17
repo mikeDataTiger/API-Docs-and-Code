@@ -6,6 +6,6 @@
     "repo": "DataTigerGitHub/API-Docs-and-Code",
     "splitSpec": false,
     "samples": true,
-    "installSwaggerUI": true
+    "installSwaggerUI": false
   }
 }
