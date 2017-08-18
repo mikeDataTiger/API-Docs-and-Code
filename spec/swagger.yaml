@@ -764,8 +764,8 @@ definitions:
       - events
     properties:
       userId:
-        description: The unique identifier of the user. The batch contains a set of events from this source user.
-        $ref: '#/definitions/UserIdType'
+        description: The unique identifier of the user. This outside ID is used for efficient routing of the events batch to the appropriate handler without the need to parse the batch.
+        type: string
       events:
         description: A list of one or more events for the specified user.
         type: array
@@ -786,7 +786,7 @@ definitions:
     properties:
      UserId:
         type: string
-        description: The unique identifier of the user. (same as the one provided at the top-level batch property.
+        description: The unique identifier of the user. (same as the one provided at the top-level batch property). If the user doesn't exist yet, a new one will be created.
      AppId:
         type: string
         description: The unique application identifier.
@@ -797,7 +797,7 @@ definitions:
             New event types can be added / removed / modified to the meta model as necessary.
      Version:
       type: string
-      description: The version of the event schema according to which this event will be validated and parsed
+      description: The version of the event schema according to which this event will be validated and parsed. The existing versions can be queried through the DATATYPES endpoints.
 
      CreatedOn:
       description: Event creation time
@@ -827,10 +827,6 @@ definitions:
       Version:
         type: string
         description: The version of the user schema according to which the properties of the user will be validated and parsed
-
-  UserIdType:
-    description: The unique identifier of a user
-    type: string
 
   EpochMillis:
     description: |
