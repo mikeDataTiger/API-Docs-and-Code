@@ -14,27 +14,6 @@ info:
   title: DataTiger Management API
   description: |
 
-    # Introduction
-    Welcome to DataTiger's API! You can use this API to access all our API endpoints, such as the Event Ingestion API to get your data into DataTiger, or the Workflow Management API to setup and change your workflows.
-    The API is organized around REST. All requests should be made over SSL. All request and response bodies, including errors, are encoded in JSON.
-    We also have some specific language bindings to make integration easier. You can switch the programming language of the examples with the tabs in the top right.
-
-    Currently we support the following official client bindings:
-    * Ruby
-    * Node
-    * Python
-    * Java
-
-    To play around with a few examples, we recommend a REST client called Postman. Simply tap the button below to import our API spec.
-
-    <a href="https://github.com/DataTigerGitHub/API-Docs-and-Code/blob/master/web/postman.md" target="_blank"><img src="https://run.pstmn.io/button.svg" alt="Run in Postman"></a>
-
-
-    Additional material is also available on our GitHub repo.
-    
-    <a href="https://github.com/DataTigerGitHub/API-Docs-and-Code" target="_blank"><img src="https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/GitHub.jpg" alt="Go to GitHub"></a>
-
-
     # General concepts
     * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
     This is returned when an object is created or whenever it is retrieved from the databse.
@@ -50,9 +29,6 @@ info:
   version: "1.0.0"
   x-logo:
     url: "http://stark-journey-33958.herokuapp.com/img/Data%20Tiger%20Logo%20in%20Left.png"
-  contact:
-    name: DataTiger
-    email: info@datatiger.com
 
 host: preprod.api.datatiger.com
 basePath: /
@@ -62,8 +38,6 @@ schemes:
 tags:
   - name: health
     description: System health and reporting
-  - name: events ingestion
-    description: Ingestion of events
   - name: datatypes
     description: Supported data types, event and user schema
   - name: applications
@@ -79,9 +53,6 @@ x-tagGroups:
   - name: System calls
     tags:
       - health
-  - name: Events management
-    tags:
-      - events ingestion
   - name: User yourney management
     tags:
       - applications
@@ -172,38 +143,6 @@ paths:
                   value: "!="
 
 
-##################################################################################
-#                      Events ingestion
-##################################################################################
-
-  /events:
-
-    post:
-      summary: Processes a batch of user events
-      description: |
-         Processes the provided batch of user events. This will result in executing all relevant workflows and
-         persisting the provided user information.
-      tags:
-        - events ingestion
-      operationId: recordEvent
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - name: x-api-key
-          in: header
-          required: true
-          type: string
-          description: The API key for this endpoint
-        - name: body
-          in: body
-          required: true
-          schema:
-            "$ref": '#/definitions/EventBatchType'
-      responses:
-        200:
-          description: The event was consumed
 
 ##################################################################################
 #                      System health and reporting
@@ -751,93 +690,10 @@ paths:
 #                       Definitions of type
 ##################################################################################
 
-#types of events
-
-definitions:
-
-
-  EventBatchType:
-    type: object
-    description: A batch of events. All events in a single batch must be for the same source user.
-    required:
-      - userId
-      - events
-    properties:
-      userId:
-        description: The unique identifier of the user. This outside ID is used for efficient routing of the events batch to the appropriate handler without the need to parse the batch.
-        type: string
-      events:
-        description: A list of one or more events for the specified user.
-        type: array
-        items:
-          $ref: '#/definitions/EventType'
-
-  EventType:
-    description: The type is derived from the event meta-model which is associated with the application.
-              New event types can be added / removed / modified to the meta model as necessary.
-
-    type: object
-    required:
-      - UserId
-      - AppId
-      - EventType
-      - CreatedOn
-      - Version
-    properties:
-     UserId:
-        type: string
-        description: The unique identifier of the user. (same as the one provided at the top-level batch property). If the user doesn't exist yet, a new one will be created.
-     AppId:
-        type: string
-        description: The unique application identifier.
-     EventType:
-        type: string
-        description: |
-            The type of the event. The type is derived from the event meta-model which is associated with the application.
-            New event types can be added / removed / modified to the meta model as necessary.
-     Version:
-      type: string
-      description: The version of the event schema according to which this event will be validated and parsed. The existing versions can be queried through the DATATYPES endpoints.
-
-     CreatedOn:
-      description: Event creation time
-      $ref: '#/definitions/EpochMillis'
-
-     User:
-      description: The properties of the user. Depending on the event type the user field may not be necessary.
-      $ref: '#/definitions/UserType'
-
-
-  UserType:
-    type: object
-    description:  |
-      User properties. The required properties UserId, Version and AppId must be provided for all users.
-      Further custom properties can be specified in the user-model associated with the application.
-    required:
-      - UserId
-      - AppId
-      - Version
-    properties:
-      UserId:
-        type: string
-        description: A unique identifier of the user (same as the one on the event and batch property)
-      AppId:
-        type: string
-        description: The unique application identifier (same as the one on the event)
-      Version:
-        type: string
-        description: The version of the user schema according to which the properties of the user will be validated and parsed
-
-  EpochMillis:
-    description: |
-      A date expressed in milliseconds since the epoch (so timezone is irrelevant).
-      E.g Wed Jul 12 2017 13:57:48 GMT+0100 (Europe/London) equals 1499864268536 milliseconds
-    type: number
-    format: int64
 
 
 ### Core types of management API
-
+definitions:
 
   NameType:
     type: string
