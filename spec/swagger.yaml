@@ -14,6 +14,7 @@ info:
   title: DataTiger Management API
   description: |
 
+
     # General concepts
     * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
     This is returned when an object is created or whenever it is retrieved from the databse.
@@ -27,8 +28,6 @@ info:
 
 
   version: "1.0.0"
-  x-logo:
-    url: "http://stark-journey-33958.herokuapp.com/img/Data%20Tiger%20Logo%20in%20Left.png"
 
 host: preprod.api.datatiger.com
 basePath: /
