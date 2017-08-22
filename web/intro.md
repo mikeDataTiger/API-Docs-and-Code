@@ -15,7 +15,9 @@ Currently we support the following official client bindings:
 * Java
 
 To play around with a few examples, we recommend a REST client called Postman. Simply tap the button below to import our API spec.
+
 [![Postman](https://run.pstmn.io/button.svg)](https://github.com/DataTigerGitHub/API-Docs-and-Code/blob/master/web/postman.md)
 
 Additional material is also available on our GitHub repo.
+
 [![Github](https://raw.githubusercontent.com/DataTigerGitHub/API-Docs-and-Code/master/web/GitHub.jpg)](https://github.com/DataTigerGitHub/API-Docs-and-Code)
