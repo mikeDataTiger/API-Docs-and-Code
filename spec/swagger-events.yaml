@@ -31,10 +31,10 @@ info:
 
 
 
-host: preprod.api.datatiger.com
+host: 6f92bwvk0k.execute-api.eu-west-1.amazonaws.com/LATEST
 basePath: /
 schemes:
-  - http
+  - https
 
 tags:
   - name: events ingestion
