@@ -1,0 +1,1100 @@
+swagger: '2.0'
+info:
+  title: DataTiger Management API
+  description: |
+
+
+    # General concepts
+    * Identifiers: All managed objects can be uniquelly identified by a plaform generated identifier.
+    This is returned when an object is created or whenever it is retrieved from the databse.
+    * Versioning: Workflows are immutable entities so to making changes to a workflow requires the creation of a new version. This ensures a well defined execution model
+    for cases where e.g. a workflow is modified while it is executing. As a result, the new version has its own identifier. The old identifier will now refer to an 'outdated' entry.
+
+    # Authentication
+    DataTiger offers offers the following form of authentication:
+      - API Key
+  version: 1.0.0
+host: preprod.api.datatiger.com
+basePath: /
+schemes:
+  - http
+tags:
+  - name: health
+    description: System health and reporting
+  - name: datatypes
+    description: 'Supported data types, event and user schema'
+  - name: applications
+    description: Management of applications
+  - name: abtests
+    description: Management of AB tests
+  - name: workflows
+    description: Management of workflows
+x-tagGroups:
+  - name: System calls
+    tags:
+      - health
+  - name: User yourney management
+    tags:
+      - applications
+      - workflows
+      - abtests
+  - name: Data types
+    tags:
+      - datatypes
+paths:
+  /datatypes:
+    get:
+      summary: Lists the available user & event attributes
+      description: |
+        Lists the name and type of each attribute defined at the user and event level. This information
+        is necessary to know which attributes can be included in workflow condition expressions or
+        segmentation expressions.
+        Each attribute is identified by a name and a data type. The supported set of data types is
+        specified by the AttributeType enumeration.
+      tags:
+        - datatypes
+      operationId: getDataDictionary
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Returns the data dictionaries
+          schema:
+            type: object
+            properties:
+              userAttributes:
+                description: The list of user attributes
+                type: array
+                items:
+                  $ref: '#/definitions/AttributeDefinition'
+              eventAttributes:
+                description: The list of event attributes
+                type: array
+                items:
+                  $ref: '#/definitions/AttributeDefinition'
+              operators:
+                description: |
+                  A map having as keys the available attribute types for building segmentation & condition expressions
+                  and as values the list of operators that are applicable for each respective attribute type.
+                  E.g. a mapping of the form AttributeType.TEXT -> [ 'CONTAINS', 'BEGINS WITH', 'IS', 'IS NOT',...] etc.
+                type: object
+                properties:
+                  attributeType:
+                    type: array
+                    items:
+                      $ref: '#/definitions/OperatorType'
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/definitions/OperatorType'
+          examples:
+            application/json:
+              userAttributes:
+                - name: LastName
+                  type: text
+                - name: AppId
+                  type: text
+                - name: UserId
+                  type: text
+              eventAttributes:
+                - name: CreatedOn
+                  type: datetime
+                - name: EventType
+                  type: text
+              operators:
+                integer:
+                  - name: Greater than
+                    value: '>'
+                text:
+                  - name: Equal to
+                    value: ==
+                  - name: Not equal to
+                    value: '!='
+                bool:
+                  - name: Equal to
+                    value: ==
+                  - name: Not equal to
+                    value: '!='
+  /ping:
+    get:
+      summary: Check if the server is running
+      description: |
+        Check if the server is running
+      tags:
+        - health
+      operationId: ping
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: pong
+          schema:
+            type: string
+      x-code-samples:
+        - lang: JAVA
+          source: |
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+              .url("http://preprod.api.datatiger.com/ping")
+              .get()
+              .addHeader("accept", "application/json")
+              .addHeader("cache-control", "no-cache")
+              .addHeader("postman-token", "213b260a-d158-cffd-4a0f-ddc632444de7")
+              .build();
+
+            Response response = client.newCall(request).execute();
+  /applications:
+    get:
+      summary: Get applications
+      description: |
+        List all the applications 
+      tags:
+        - applications
+      operationId: getApplications
+      parameters:
+        - $ref: '#/parameters/nameFilter'
+        - $ref: '#/parameters/IdFilter'
+        - $ref: '#/parameters/pagingPageParam'
+        - $ref: '#/parameters/pagingPerPageParam'
+        - $ref: '#/parameters/ApplicationSortingParam'
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The set of applications that match the filter criteria
+          schema:
+            type: object
+            properties:
+              paging:
+                description: Paging information of the response
+                $ref: '#/definitions/PagingType'
+              items:
+                description: Array of the returned applications
+                type: array
+                items:
+                  $ref: '#/definitions/ApplicationType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+      x-code-samples:
+        - lang: Node
+          source: |-
+            var http = require("http");
+
+            var options = {
+              "method": "GET",
+              "hostname": "preprod.api.datatiger.com",
+              "port": null,
+              "path": "/applications",
+              "headers": {
+                "accept": "application/json",
+                "content-type": "application/x-www-form-urlencoded",
+                "cache-control": "no-cache",
+                "postman-token": "7069ebc8-ef18-80b0-b74a-a5ca0bd73489"
+              }
+            };
+
+            var req = http.request(options, function (res) {
+              var chunks = [];
+
+              res.on("data", function (chunk) {
+                chunks.push(chunk);
+              });
+
+              res.on("end", function () {
+                var body = Buffer.concat(chunks);
+                console.log(body.toString());
+              });
+            });
+        - lang: Java
+          source: |-
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+              .url("http://preprod.api.datatiger.com/applications")
+              .get()
+              .addHeader("accept", "application/json")
+              .addHeader("content-type", "application/x-www-form-urlencoded")
+              .addHeader("cache-control", "no-cache")
+              .addHeader("postman-token", "a193ffe9-5866-0c9e-ec3e-1ceb7dbdce27")
+              .build();
+
+            Response response = client.newCall(request).execute(); 
+    post:
+      summary: Creates a new application
+      description: |
+        Creates a new application. 
+      tags:
+        - applications
+      operationId: createApplication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreateApplicationType'
+      responses:
+        '201':
+          description: The application was created succesfully
+          schema:
+            $ref: '#/definitions/ApplicationType'
+          headers:
+            Location:
+              description: The location of the created item
+              type: string
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+  '/applications/{application}':
+    parameters:
+      - $ref: '#/parameters/applicationParam'
+    put:
+      summary: Updates an application
+      description: |
+        Updates an application by overriding the existing entry.
+      tags:
+        - applications
+      operationId: updateApplication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationType'
+      responses:
+        '200':
+          description: The application was updated successfully
+          schema:
+            $ref: '#/definitions/ApplicationType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    get:
+      summary: Get an application
+      description: |
+        Return the identified application
+      tags:
+        - applications
+      operationId: getApplication
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The application
+          schema:
+            $ref: '#/definitions/ApplicationType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '404':
+          description: The application with the specified identifier does not exist.
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '500':
+          description: The update failed due to internal server error
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+  '/applications/{application}/abtests':
+    parameters:
+      - $ref: '#/parameters/applicationParam'
+    get:
+      summary: Get the AB tests of an application
+      description: |
+        List the AB tests of an application
+      tags:
+        - abtests
+      operationId: getABTestsOfApplication
+      parameters:
+        - $ref: '#/parameters/nameFilter'
+        - $ref: '#/parameters/pagingPageParam'
+        - $ref: '#/parameters/pagingPerPageParam'
+        - $ref: '#/parameters/ABTestsSortingParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The set of AB tests that match the filter criteria
+          schema:
+            type: object
+            properties:
+              paging:
+                description: Paging information of the response
+                $ref: '#/definitions/PagingType'
+              items:
+                description: Array of the returned applications
+                type: array
+                items:
+                  $ref: '#/definitions/ABTestType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    post:
+      summary: Creates a new AB test
+      description: |
+        Creates a new AB test under the specified application
+      tags:
+        - abtests
+      operationId: createABTestInApplication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreateABTestType'
+      responses:
+        '201':
+          description: The AB test was created successfully
+          schema:
+            $ref: '#/definitions/ABTestType'
+          headers:
+            Location:
+              description: The location of the created item
+              type: string
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+  '/applications/{application}/abtests/{abTest}':
+    parameters:
+      - $ref: '#/parameters/applicationParam'
+      - $ref: '#/parameters/abTestParam'
+    get:
+      summary: Get an AB test
+      description: |
+        Reuturn an AB test, identified by the AB test ID
+      tags:
+        - abtests
+      operationId: getABTestOfApplication
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The AB test
+          schema:
+            $ref: '#/definitions/ABTestType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '404':
+          description: The workflow does not exist
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+  '/applications/{application}/workflows':
+    parameters:
+      - $ref: '#/parameters/applicationParam'
+    get:
+      summary: List the workflows of the application
+      description: |
+        List the workflows under the specified application, according to the criteria
+        specified in the parameters.
+      externalDocs:
+        description: Further information about workflow definitions
+        url: 'http://www.datatiger.com'
+      tags:
+        - workflows
+      operationId: getWorkflowsOfApplication
+      parameters:
+        - $ref: '#/parameters/nameFilter'
+        - $ref: '#/parameters/versionFilter'
+        - $ref: '#/parameters/statusFilter'
+        - $ref: '#/parameters/dateFromFilter'
+        - $ref: '#/parameters/dateToFilter'
+        - $ref: '#/parameters/pagingPageParam'
+        - $ref: '#/parameters/pagingPerPageParam'
+        - $ref: '#/parameters/WorkflowSortingParam'
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The set of workflows that match the filtering criteria.
+          schema:
+            type: object
+            properties:
+              paging:
+                description: Paging information of the response
+                $ref: '#/definitions/PagingType'
+              items:
+                description: Array of the returned applications
+                type: array
+                items:
+                  $ref: '#/definitions/WorkflowType'
+          examples:
+            application/json:
+              name: Test workflow
+              id: adsjfsijdiujqw984u
+              application:
+                name: Test application
+              version: 2
+              startsOn: 1451606400000
+              endsOn: 1454284800000
+              status: ACTIVE
+              triggerExpression: event.EventType == 'Installed'
+              abTest:
+                name: Test AB test 1
+                id: 1
+              steps:
+                StartStep:
+                  name: StartStep
+                  type: START
+                  transitions:
+                    OK: FinStep
+                FinStep:
+                  name: FinStep
+                  type: END
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    post:
+      summary: Creates a new workflow
+      description: |
+        Creates a new workflow under the specified application.
+      tags:
+        - workflows
+      operationId: createWorkflowInApplication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreateWorkflowType'
+      responses:
+        '201':
+          description: The workflow was created successfully
+          schema:
+            $ref: '#/definitions/WorkflowType'
+          headers:
+            Location:
+              description: The location of the created item
+              type: string
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+  '/applications/{application}/workflows/{workflow}':
+    parameters:
+      - $ref: '#/parameters/applicationParam'
+      - $ref: '#/parameters/workflowParam'
+    put:
+      summary: 'Updates a workflow, by creating a new version.'
+      description: |
+        Updates a workflow, by creating a new version. Keep in mind that this will result in
+        a new workflow identifier (as the initial workflowId is attached to the previous workflow version)
+      tags:
+        - workflows
+      operationId: updateWorkflow
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/WorkflowType'
+      responses:
+        '200':
+          description: The workflow was updated successfully
+          schema:
+            $ref: '#/definitions/WorkflowType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+    get:
+      summary: Get a unique workflow
+      description: |
+        Reuturn an application workflow, identified by the workflow unique identifier
+      tags:
+        - workflows
+      operationId: getWorkflowOfApplication
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The workflow
+          schema:
+            $ref: '#/definitions/WorkflowType'
+        '400':
+          description: Malformed request
+          schema:
+            $ref: '#/definitions/ErrorType'
+        '404':
+          description: The workflow with the specified identifier
+          schema:
+            $ref: '#/definitions/ErrorType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorType'
+definitions:
+  NameType:
+    type: string
+    description: The unique name of the entity
+  IdType:
+    description: System wide unique identifier of the entity
+    type: string
+  ObjectWithIdType:
+    type: object
+    properties:
+      id:
+        description: The auto-generated unique identifier of the object
+        $ref: '#/definitions/IdType'
+  VersionType:
+    type: number
+    description: The version number
+  ObjectWithVersionType:
+    type: object
+    properties:
+      version:
+        description: The auto-generated version of this object
+        $ref: '#/definitions/VersionType'
+  ErrorType:
+    type: object
+    required:
+      - errorId
+      - message
+    properties:
+      errorId:
+        type: string
+        description: A unique identifier of the error type
+      message:
+        type: string
+        description: A short message describing what went wrong
+      description:
+        type: string
+        description: Further details on the error
+  PagingType:
+    type: object
+    properties:
+      total:
+        type: number
+        description: total results
+      page:
+        type: number
+        description: The number of the current page
+      perPage:
+        type: number
+        description: Number of results per page
+      previous:
+        type: string
+        description: Link to previous page (if exists)
+      next:
+        type: string
+        description: Link to next page (if exists)
+      first:
+        type: string
+        description: Link to first page
+      last:
+        type: string
+        description: Link to last page
+  StatusType:
+    type: string
+    description: |
+      The status of the entity. Not all values might be relevant for all entities.
+        * ACTIVE - Entity is currently active
+        * INACTIVE - Entity is currently inactive
+        * COMPLETED - ....
+    enum:
+      - ACTIVE
+      - INACTIVE
+      - COMPLETED
+      - DELETED
+      - CANCELED
+      - PENDING
+      - FAILED
+  AttributeDefinition:
+    description: Defines an attribute
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of the attribute
+      datatype:
+        $ref: '#/definitions/AttributeType'
+        description: the data type of the attribute
+  AttributeType:
+    description: Enumeration of all supported data types for user and event attributes
+    type: string
+    enum:
+      - bool
+      - text
+      - integer
+      - float
+      - datetime
+  OperatorType:
+    type: object
+    properties:
+      name:
+        type: string
+        description: a name for this operator
+      value:
+        type: string
+        description: a value that uniquely identifies this operator
+  OperatorEnumType:
+    description: Enumeration of all supported operators within segmentation and condition expressions
+    type: string
+    enum:
+      - bool
+      - text
+      - integer
+      - float
+      - datetime
+  DateTimeUNIXTimestamp:
+    type: string
+    description: 'Date and time formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved.'
+  DateUNIXTimestamp:
+    type: string
+    description: 'A date formated as a UNIX timestamp. A positive number that specifies the number of seconds since the epoch (1970-01-01 00:00:00 UTC). Up to 6 decimal places (microsecond precision) are preserved.'
+  PropertyValueType:
+    type: string
+  CreateApplicationType:
+    type: object
+    description: Fully populated application information
+    required:
+      - name
+    properties:
+      name:
+        description: The name of the application
+        $ref: '#/definitions/NameType'
+  ApplicationType:
+    description: Full populated application information
+    allOf:
+      - $ref: '#/definitions/CreateApplicationType'
+      - $ref: '#/definitions/ObjectWithIdType'
+  ABTestRefType:
+    description: The unique identifier of the AB test
+    type: string
+  ABTestType:
+    description: |
+      AB test object
+    allOf:
+      - $ref: '#/definitions/ObjectWithIdType'
+      - $ref: '#/definitions/CreateABTestType'
+  CreateABTestType:
+    type: object
+    description: |
+      AB test object
+    required:
+      - name
+      - application
+      - testGroups
+    properties:
+      name:
+        description: The name of the AB test
+        $ref: '#/definitions/NameType'
+      description:
+        description: The user description for this AB test
+        type: string
+      application:
+        description: Reference to the associated application
+        $ref: '#/definitions/IdType'
+      seed:
+        description: A seed for the AB test. AB tests with the same seeds and test sizes will result in groups with the exact same users.
+        type: string
+      controlGroupSize:
+        description: Percentage of the population that should belong to the control group
+        type: number
+        format: int32
+      testGroups:
+        description: An array of the test groups for this AB test
+        type: array
+        items:
+          $ref: '#/definitions/TestGroupType'
+  TestGroupType:
+    type: object
+    properties:
+      name:
+        description: The name of the test group
+        type: string
+      size:
+        description: The size of the testgroup as a percentage (e.g. 20 is 20% of the population)
+        type: number
+        format: int32
+  WorkflowStateType:
+    type: string
+    description: Describes the type of a workflow state
+    enum:
+      - START
+      - TERMINAL
+      - ACTION
+      - CONDITION
+      - WAIT
+  ExpressionType:
+    type: string
+    description: |
+      A boolean expression using the event and user dictionary.
+  WorkflowStepNameType:
+    type: string
+    description: the name of the step. This is used to refer to the step within the workflow.
+  CreateWorkflowType:
+    type: object
+    description: |
+      Fully populated workflow information.
+    required:
+      - name
+      - status
+      - steps
+    properties:
+      name:
+        description: The name of the workflow
+        $ref: '#/definitions/NameType'
+      application:
+        description: |
+          The associated application id. This is not required, as the application reference is part of the URL. If it is specified, however,
+          it should refer to the same application as the URL parameter.
+        $ref: '#/definitions/IdType'
+      startsOn:
+        description: Start of the workflow validity time. The workflow can only be triggered after this time.
+        $ref: '#/definitions/DateTimeUNIXTimestamp'
+      endsOn:
+        description: End of the workflow validity time. The workflow can only be triggered before this time.
+        $ref: '#/definitions/DateTimeUNIXTimestamp'
+      status:
+        description: The current status of the workflow
+        $ref: '#/definitions/StatusType'
+      triggerExpression:
+        description: 'If this expression evaluates to true once an event arrives, and the workflow is not already in progress, then it will be triggered.'
+        $ref: '#/definitions/ExpressionType'
+      abTest:
+        description: |
+          The associated AB test of the workflow. The workflow steps can be customized according to the test groups in this AB test.
+        $ref: '#/definitions/ABTestRefType'
+      steps:
+        type: object
+        description: |
+          A map of all the workflow steps. It's structured as a map of the
+          step name to the step definition.
+        properties:
+          stepName:
+            $ref: '#/definitions/WorkflowStepType'
+  WorkflowType:
+    description: 'Full populated workflow type, including the identifier and version number.'
+    allOf:
+      - $ref: '#/definitions/CreateWorkflowType'
+      - $ref: '#/definitions/ObjectWithIdType'
+      - $ref: '#/definitions/ObjectWithVersionType'
+  WorkflowStepType:
+    type: object
+    description: |
+      Generic workflow step definition for all types of steps. The 'concrete' definitions should
+      be one of: START, ACTION, TERMINAL and CONDITION. These extend this definition by adding
+      extra properties when necessary.
+    discriminator: type
+    required:
+      - name
+      - type
+    properties:
+      type:
+        $ref: '#/definitions/WorkflowStateType'
+      name:
+        description: |
+          The name of the workflow step. This is used as an identifier for this step within
+          the workflow definition.
+        $ref: '#/definitions/WorkflowStepNameType'
+      description:
+        type: string
+      transitions:
+        type: object
+        description: |
+          map from the transition name to the resulting workflow step.
+        properties:
+          transitionName:
+            $ref: '#/definitions/WorkflowStepNameType'
+        additionalProperties:
+          $ref: '#/definitions/WorkflowStepNameType'
+      AB:
+        type: object
+        description: Map of an AB test name to overrides for any of the step specific properties
+        properties:
+          abTestName:
+            type: object
+            description: Map of property name to the overriden value
+            properties:
+              propertyName:
+                $ref: '#/definitions/PropertyValueType'
+            additionalProperties:
+              $ref: '#/definitions/PropertyValueType'
+        additionalProperties:
+          type: object
+          description: Map of property name to the overriden value
+          properties:
+            propertyName:
+              $ref: '#/definitions/PropertyValueType'
+          additionalProperties:
+            $ref: '#/definitions/PropertyValueType'
+  START:
+    description: |
+      The workflow starting step.
+    allOf:
+      - $ref: '#/definitions/WorkflowStepType'
+  ACTION:
+    description: |
+      An action peforming workflow step. The extra parameters customize the action.
+    allOf:
+      - $ref: '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          url:
+            type: string
+            description: The URL of the action handler
+          numRetries:
+            type: number
+            format: int32
+            description: Number of retries before permanent failure
+          params:
+            type: object
+            description: parameters to pass to the action
+            properties:
+              parameterName:
+                type: string
+            additionalProperties:
+              type: string
+        required:
+          - url
+  WAIT:
+    description: Waits for a specified amount of time
+    allOf:
+      - $ref: '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          duration:
+            type: number
+            format: int32
+            description: The amount of time units to wait
+          timeUnit:
+            type: string
+            enum:
+              - hour
+              - day
+              - week
+              - month
+            description: Specifies the time unit
+        required:
+          - duration
+          - timeUnit
+  TERMINAL:
+    description: Workflow ending step
+    allOf:
+      - $ref: '#/definitions/WorkflowStepType'
+  CONDITION:
+    description: |
+      A conditional step. Parameters:
+      * expressions: A boolean expression. According to it's evaluation one of the 'TRUE' or 'FALSE' transitions will be executed.
+    allOf:
+      - $ref: '#/definitions/WorkflowStepType'
+      - type: object
+        properties:
+          expression:
+            type: string
+            description: The boolean expression to evaluate
+          duration:
+            type: number
+            format: int32
+            description: The amount of time units to wait
+          timeUnit:
+            type: string
+            enum:
+              - hour
+              - day
+              - week
+              - month
+            description: Specifies the time unit
+        required:
+          - expression
+parameters:
+  applicationParam:
+    name: application
+    in: path
+    required: true
+    type: string
+    description: The identifier of the application
+  workflowParam:
+    name: workflow
+    in: path
+    required: true
+    type: string
+    description: The identifier for the workflow
+  nameFilter:
+    name: name
+    in: query
+    required: false
+    type: string
+    description: 'Name prefix of the requested entity. If not specified, then all names are returned.'
+  IdFilter:
+    name: id
+    in: query
+    required: false
+    type: string
+    description: The identifier to be fetched
+  versionFilter:
+    name: version
+    in: query
+    required: false
+    type: string
+    description: |
+      The version to be returned. If null or 'latest' then the latest version is returned.
+  statusFilter:
+    name: status
+    in: query
+    required: false
+    description: 'One or more statuses return. If not specified, then all states are returned.'
+    type: array
+    items:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - COMPLETED
+        - DELETED
+        - CANCELED
+        - PENDING
+        - FAILED
+  pagingPageParam:
+    name: page
+    in: query
+    required: false
+    type: number
+    description: Which page of the results to fetch
+  pagingPerPageParam:
+    name: perPage
+    in: query
+    required: false
+    type: number
+    description: Results per page
+  WorkflowSortingParam:
+    name: orderby
+    description: 'Fields to sort by. Field name is for ascending order, -fieldName for descending order'
+    in: query
+    type: array
+    items:
+      type: string
+      enum:
+        - name
+        - '-name'
+        - version
+        - '-version'
+        - startsOn
+        - '-startsOn'
+        - endsOn
+        - '-endsOn'
+        - status
+        - '-status'
+  dateFromFilter:
+    name: fromTime
+    in: query
+    required: false
+    description: 'Starting date of validity. Format: ''UNIX timestamp'''
+    type: string
+  dateToFilter:
+    name: endTime
+    in: query
+    required: false
+    description: 'Ending date of validity, Format: ''UNIX timestamp'''
+    type: string
+  ABTestsSortingParam:
+    name: orderby
+    description: 'Fields to sort by. Field name is for ascending order, -fieldName for descending order'
+    in: query
+    type: array
+    items:
+      type: string
+      enum:
+        - name
+        - '-name'
+  abTestParam:
+    name: abTest
+    in: path
+    required: true
+    type: string
+    description: The id of the AB test
+  ApplicationSortingParam:
+    name: orderby
+    description: 'Fields to sort by. Field name is for ascending order, -fieldName for descending order'
+    in: query
+    type: array
+    items:
+      type: string
+      enum:
+        - name
+        - '-name'
