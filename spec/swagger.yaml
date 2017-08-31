@@ -284,7 +284,6 @@ paths:
           required: true
           schema:
             "$ref": '#/definitions/CreateApplicationType'
-          x-example: "testApp"
       responses:
         201:
           description: The application was created succesfully
